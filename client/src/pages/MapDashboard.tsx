@@ -13,6 +13,7 @@ import VehicleSelector from '../components/UI/VehicleSelector';
 import LocateButton from '../components/UI/LocateButton';
 import LaneGuidance from '../components/UI/LaneGuidance';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useMapContext } from '../context/MapContext';
 import useHazardAlerts from '../hooks/useHazardAlerts';
 import useNavigationLogic from '../hooks/useNavigationLogic';
@@ -20,6 +21,7 @@ import MapLibreNavigation from '../components/Map/MapLibreNavigation';
 
 const MapDashboard: React.FC = () => {
     const { user } = useAuth();
+    const { theme } = useTheme();
     const { userLocation, destination, setDestination, isNavigating, setIsNavigating, followMode, setFollowMode, triggerRecenter } = useMapContext();
     const [layers, setLayers] = useState({
         school_zone: true,
@@ -29,7 +31,7 @@ const MapDashboard: React.FC = () => {
         restrictions: true,
         traffic: false
     });
-    const [mapStyle, setMapStyle] = useState('standard');
+    const [viewMode, setViewMode] = useState<'2d' | '3d' | 'satellite'>('2d');
     const [allRoutes, setAllRoutes] = useState<any[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -136,9 +138,17 @@ const MapDashboard: React.FC = () => {
     return (
         <div className="h-full w-full relative">
             {isNavigating ? (
-                <MapLibreNavigation routeSegments={currentRoute?.segments || []} />
+                <MapLibreNavigation
+                    routeSegments={currentRoute?.segments || []}
+                    theme={theme}
+                    viewMode={viewMode}
+                />
             ) : (
-                <MapComponent activeStyle={mapStyle} showTraffic={layers.traffic}>
+                <MapComponent
+                    activeStyle={viewMode === 'satellite' ? 'satellite' : 'standard'}
+                    viewMode={viewMode}
+                    showTraffic={layers.traffic}
+                >
                     <HazardLayers hazards={hazards} visibleTypes={layers} />
                     <RoutingLayer
                         routes={allRoutes}
@@ -172,7 +182,7 @@ const MapDashboard: React.FC = () => {
 
             {/* Bottom Left - Map Style Switcher */}
             <div className="absolute bottom-4 left-4 md:bottom-8 md:left-4 z-[400]">
-                <MapStyleSwitcher currentStyle={mapStyle} onStyleChange={setMapStyle} />
+                <MapStyleSwitcher currentViewMode={viewMode} onViewModeChange={setViewMode} />
             </div>
 
             {/* Pre-Navigation Route Info & Start Button */}
