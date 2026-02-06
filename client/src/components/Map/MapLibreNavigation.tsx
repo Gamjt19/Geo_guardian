@@ -17,7 +17,7 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
-    const { userLocation, followMode, setFollowMode } = useMapContext();
+    const { userLocation, followMode, setFollowMode, isSimulating } = useMapContext();
     const { user } = useAuth();
     const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -122,8 +122,11 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
                 zoom: 18,
                 pitch: viewMode === '2d' ? 0 : 60,
                 bearing: heading || 0,
-                duration: 1000,
-                easing: (t) => t
+                // If simulating (high FPS updates), snap instantly to avoid lag. 
+                // If real GPS (low FPS), smooth interpolation.
+                duration: isSimulating ? 0 : 1000,
+                easing: (t) => t,
+                offset: [0, 150] // Push car down by 150px to see road ahead
             });
         }
 
