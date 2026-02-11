@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 interface SearchBoxProps {
-    onDestinationSelect: (lat: number, lng: number, name: string) => void;
+    onDestinationSelect: (location: any) => void;
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onDestinationSelect }) => {
@@ -77,7 +77,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onDestinationSelect }) => {
                             key={idx}
                             className="p-3 hover:bg-cyan-900/20 cursor-pointer text-slate-300 hover:text-cyan-300 transition-all duration-200 border-l-2 border-transparent hover:border-cyan-500 flex items-center gap-3 group"
                             onClick={() => {
-                                onDestinationSelect(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
+                                onDestinationSelect(r);
                                 setResults([]);
                                 setQuery(r.display_name.split(',')[0]);
                             }}

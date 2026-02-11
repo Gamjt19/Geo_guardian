@@ -19,6 +19,8 @@ router.get('/', async (req, res) => {
                 format: 'json',
                 q: q,
                 addressdetails: 1,
+                extratags: 1,
+                namedetails: 1,
                 limit: 5
             },
             headers: {
