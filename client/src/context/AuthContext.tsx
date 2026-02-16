@@ -5,9 +5,7 @@ import type { ReactNode } from 'react';
 export interface User {
     _id?: string;
     name: string;
-    email: string;
-    vehicleType: 'car' | 'heavy' | 'emergency' | 'walk' | 'two-wheeler';
-    role: 'user' | 'admin';
+    vehicleType?: 'car' | 'heavy' | 'emergency' | 'two-wheeler' | 'walk';
 }
 
 interface AuthContextType {
