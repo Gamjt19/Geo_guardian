@@ -4,6 +4,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { useMapContext } from '../../context/MapContext';
 import { useAuth } from '../../context/AuthContext';
 import carIcon from '../../assets/car1.png';
+import bikeIcon from '../../assets/bike1.png';
+import walkingIcon from '../../assets/walking1.png';
 import heavyIcon from '../../assets/heavy1.svg';
 import emergencyIcon from '../../assets/emergency1.svg';
 
@@ -130,24 +132,53 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
             });
         }
 
-        // Determine Icon
+        // Determine Icon and Rotation
         const vehicleType = user?.vehicleType || 'car';
         let iconSrc = carIcon;
-        if (vehicleType === 'heavy') iconSrc = heavyIcon;
-        if (vehicleType === 'emergency') iconSrc = emergencyIcon;
+        let rotationOffset = 0;
+        let size = 50; // Default size
+
+        switch (vehicleType) {
+            case 'heavy':
+                iconSrc = heavyIcon;
+                rotationOffset = 180;
+                size = 64;
+                break;
+            case 'emergency':
+                iconSrc = emergencyIcon;
+                rotationOffset = 180;
+                size = 60;
+                break;
+            case 'two-wheeler':
+                iconSrc = bikeIcon;
+                rotationOffset = 90;
+                size = 42;
+                break;
+            case 'walk':
+                iconSrc = walkingIcon;
+                rotationOffset = 0;
+                size = 48;
+                break;
+            default:
+                iconSrc = carIcon;
+                rotationOffset = 180; // Fix car orientation
+                size = 50;
+                break;
+        }
 
         // Marker Update
         if (!markerRef.current) {
             const el = document.createElement('div');
             el.className = 'vehicle-marker-3d';
-            el.style.width = '50px';
-            el.style.height = '50px';
+            el.style.width = `${size}px`;
+            el.style.height = `${size}px`;
 
             const img = document.createElement('img');
             img.src = iconSrc;
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.display = 'block';
+            img.style.transform = `rotate(${rotationOffset}deg)`; // Apply static rotation fix
             img.alt = "Vehicle";
 
             el.appendChild(img);
@@ -160,6 +191,16 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
             const img = markerRef.current.getElement().querySelector('img');
             if (img && img.src !== iconSrc && !img.src.endsWith(iconSrc)) {
                 img.src = iconSrc;
+            }
+            // Ensure rotation is updated if vehicle type changed (though component remounts usually handle this, safe to update)
+            if (img) {
+                img.style.transform = `rotate(${rotationOffset}deg)`;
+            }
+            // Update size if changed
+            const el = markerRef.current.getElement();
+            if (el) {
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
             }
         }
 
