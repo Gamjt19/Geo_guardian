@@ -1,0 +1,2 @@
+src/components/Map/Hazards/HazardConfirmPrompt.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/Map/Hazards/HazardReportSheet.tsx(57,24): error TS2322: Type '"local_guide"' is not assignable to type '"user" | "admin" | undefined'.

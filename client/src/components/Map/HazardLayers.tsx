@@ -7,11 +7,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 interface Hazard {
     _id: string;
     name: string;
-    type: 'school_zone' | 'hospital_zone' | 'speed_breaker' | 'sharp_turn';
+    type: 'school_zone' | 'hospital_zone' | 'speed_breaker' | 'sharp_turn' | 'bad_road';
     location: {
         coordinates: [number, number]; // [lng, lat]
     };
     radiusMeters?: number;
+    description?: string;
 }
 
 interface HazardLayersProps {
@@ -40,6 +41,7 @@ const speedBreakerIcon = createGlowIcon(<Activity />, 'border-orange-500', 'rgba
 const turnIcon = createGlowIcon(<Zap />, 'border-yellow-400', 'rgba(250,204,21,0.6)');
 const schoolIcon = createGlowIcon(<Info />, 'border-blue-400', 'rgba(96,165,250,0.6)');
 const hospitalIcon = createGlowIcon(<AlertTriangle />, 'border-red-500', 'rgba(239,68,68,0.6)');
+const badRoadIcon = createGlowIcon(<AlertTriangle />, 'border-amber-600', 'rgba(217,119,6,0.6)');
 
 const HazardLayers: React.FC<HazardLayersProps> = ({ hazards, visibleTypes }) => {
     // Icons need to be recreated if props change? No, static for now.
@@ -62,6 +64,9 @@ const HazardLayers: React.FC<HazardLayersProps> = ({ hazards, visibleTypes }) =>
                 } else if (h.type === 'sharp_turn') {
                     icon = turnIcon;
                     color = 'yellow';
+                } else if (h.type === 'bad_road') {
+                    icon = badRoadIcon;
+                    color = 'amber';
                 }
 
                 const isZone = h.type === 'school_zone' || h.type === 'hospital_zone';
@@ -85,6 +90,11 @@ const HazardLayers: React.FC<HazardLayersProps> = ({ hazards, visibleTypes }) =>
                             <Popup className="futuristic-popup">
                                 <div className="font-orbitron font-bold text-sm uppercase tracking-wider">{h.name}</div>
                                 <div className="text-xs text-slate-500 font-mono mt-1">{h.type.replace('_', ' ')}</div>
+                                {h.description && (
+                                    <div className="text-[10px] text-slate-400 mt-2 border-t border-slate-700/50 pt-1 italic">
+                                        {h.description}
+                                    </div>
+                                )}
                             </Popup>
                         </Marker>
                     </React.Fragment>

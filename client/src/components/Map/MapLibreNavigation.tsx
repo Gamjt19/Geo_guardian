@@ -4,8 +4,11 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { useMapContext } from '../../context/MapContext';
 import { useAuth } from '../../context/AuthContext';
 import carIcon from '../../assets/car1.png';
+import bikeIcon from '../../assets/bike1.png';
+import walkingIcon from '../../assets/walking1.png';
 import heavyIcon from '../../assets/heavy1.svg';
 import emergencyIcon from '../../assets/emergency1.svg';
+import { useSpeedLimit } from '../../hooks/useSpeedLimit';
 
 interface MapLibreNavigationProps {
     routeSegments: any[];
@@ -17,9 +20,13 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
-    const { userLocation, followMode, setFollowMode, isSimulating } = useMapContext();
+    const { userLocation, followMode, setFollowMode, isSimulating, currentRouteIndex, routeHazards } = useMapContext();
     const { user } = useAuth();
     const [mapLoaded, setMapLoaded] = useState(false);
+
+    // Speed Tracking
+    const { status } = useSpeedLimit(userLocation, user?.vehicleType || 'car');
+    const isOverspeed = status === 'overspeed';
 
     // 1. Initialize MapLibre
     useEffect(() => {
@@ -55,54 +62,28 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
     }, [theme, viewMode, mapLoaded]);
 
     const updateMapStyle = (mapInstance: maplibregl.Map, currentTheme: string, currentView: string) => {
-        // --- 1. View Mode (Perspective) ---
-        if (currentView === '2d') {
-            mapInstance.easeTo({ pitch: 0 });
-        } else if (currentView === '3d' || currentView === 'satellite') {
-            // Keep pitch for 3D/Sat if desired, or set it
-            if (currentView === '3d') mapInstance.easeTo({ pitch: 60 });
-            // Satellite might want 0 or 60 depending on preference, sticking to 60 for nav feel if tracking
-        }
-
-        // --- 2. Style / Colors ---
-        // Basic Raster Satellite Layer handling could go here if we had a source URL
-        // For now, we are modifying the vector style colors.
-
         const style = mapInstance.getStyle();
         if (!style || !style.layers) return;
 
         const isDark = currentTheme === 'dark';
 
         style.layers.forEach((layer) => {
-            // Backgrounds
             if (layer.type === 'background') {
                 mapInstance.setPaintProperty(layer.id, 'background-color', isDark ? '#0f172a' : '#f8fafc');
             }
             if (layer.type === 'fill') {
-                // Land / Ground
                 mapInstance.setPaintProperty(layer.id, 'fill-color', isDark ? '#1e293b' : '#e2e8f0');
             }
-
-            // Roads
             if (layer.type === 'line') {
-                // Heuristic: identify road layers
                 if (layer.id.includes('road') || layer.id.includes('highway') || layer.id.includes('transportation')) {
                     mapInstance.setPaintProperty(layer.id, 'line-color', isDark ? '#64748b' : '#ffffff');
                 }
             }
-
-            // Text
             if (layer.type === 'symbol') {
                 mapInstance.setPaintProperty(layer.id, 'text-color', isDark ? '#e2e8f0' : '#1e293b');
                 mapInstance.setPaintProperty(layer.id, 'text-halo-color', isDark ? '#0f172a' : '#ffffff');
             }
-
-            // Buildings (3D)
             if (layer.type === 'fill-extrusion') {
-                // Toggle visibility based on viewMode?
-                // Usually we want them in 3D, maybe not in 2D or Satellite?
-                // For now, let's keep them but style them.
-
                 mapInstance.setPaintProperty(layer.id, 'fill-extrusion-color', isDark ? '#334155' : '#cbd5e1');
                 mapInstance.setPaintProperty(layer.id, 'fill-extrusion-opacity', currentView === '2d' ? 0 : 0.9);
             }
@@ -115,90 +96,245 @@ const MapLibreNavigation: React.FC<MapLibreNavigationProps> = ({ routeSegments, 
 
         const { lat, lng, heading } = userLocation;
 
-        // Camera Follow
         if (followMode) {
             map.current.easeTo({
                 center: [lng, lat],
                 zoom: 18,
                 pitch: viewMode === '2d' ? 0 : 60,
                 bearing: heading || 0,
-                // If simulating (high FPS updates), snap instantly to avoid lag. 
-                // If real GPS (low FPS), smooth interpolation.
                 duration: isSimulating ? 0 : 1000,
                 easing: (t) => t,
-                offset: [0, 150] // Push car down by 150px to see road ahead
+                offset: [0, 150]
             });
         }
 
-        // Determine Icon
+        // Determine Icon and Rotation
         const vehicleType = user?.vehicleType || 'car';
         let iconSrc = carIcon;
-        if (vehicleType === 'heavy') iconSrc = heavyIcon;
-        if (vehicleType === 'emergency') iconSrc = emergencyIcon;
+        let rotationOffset = 0;
+        let size = 50; // Default size
 
-        // Marker Update
+        switch (vehicleType) {
+            case 'heavy':
+                iconSrc = heavyIcon;
+                rotationOffset = 180;
+                size = 64;
+                break;
+            case 'emergency':
+                iconSrc = emergencyIcon;
+                rotationOffset = 180;
+                size = 60;
+                break;
+            case 'two-wheeler':
+                iconSrc = bikeIcon;
+                rotationOffset = 90;
+                size = 42;
+                break;
+            case 'walk':
+                iconSrc = walkingIcon;
+                rotationOffset = 180;
+                size = 48;
+                break;
+            default:
+                iconSrc = carIcon;
+                rotationOffset = 180; // Fix car orientation
+                size = 50;
+                break;
+        }
+
         if (!markerRef.current) {
             const el = document.createElement('div');
-            el.className = 'vehicle-marker-3d';
-            el.style.width = '50px';
-            el.style.height = '50px';
+            el.className = 'vehicle-marker-3d relative flex items-center justify-center';
+            el.style.width = `${size}px`;
+            el.style.height = `${size}px`;
 
-            const img = document.createElement('img');
-            img.src = iconSrc;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.display = 'block';
-            img.alt = "Vehicle";
+            // Background Pulsing for 3D marker
+            const pulse = document.createElement('div');
+            pulse.className = `absolute inset-0 rounded-full opacity-20 animate-ping ${isOverspeed ? 'bg-red-500/80' : 'bg-emerald-500/50'}`;
+            pulse.style.transform = 'scale(0.8)';
+            pulse.id = 'vehicle-pulse';
+            el.appendChild(pulse);
 
-            el.appendChild(img);
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'relative z-10 transition-transform duration-300 ease-linear w-full h-full';
+            imgContainer.id = 'vehicle-img-container';
+
+            imgContainer.style.backgroundImage = `url(${iconSrc})`;
+            imgContainer.style.backgroundSize = 'contain';
+            imgContainer.style.backgroundRepeat = 'no-repeat';
+            imgContainer.style.backgroundPosition = 'center';
+            imgContainer.style.transform = `rotate(${rotationOffset}deg)`;
+
+            el.appendChild(imgContainer);
 
             markerRef.current = new maplibregl.Marker({ element: el })
                 .setLngLat([lng, lat])
                 .addTo(map.current);
         } else {
             markerRef.current.setLngLat([lng, lat]);
-            const img = markerRef.current.getElement().querySelector('img');
-            if (img && img.src !== iconSrc && !img.src.endsWith(iconSrc)) {
-                img.src = iconSrc;
+            const imgContainer = markerRef.current.getElement().querySelector('#vehicle-img-container') as HTMLElement;
+
+            if (imgContainer) {
+                // Ensure URL formatting doesn't falsely trigger a replace by stripping quotes if present
+                const currentBg = imgContainer.style.backgroundImage.replace(/['"]/g, '');
+                const expectedBg = `url(${iconSrc})`.replace(/['"]/g, '');
+                if (currentBg !== expectedBg) {
+                    imgContainer.style.backgroundImage = `url(${iconSrc})`;
+                }
+                imgContainer.style.transform = `rotate(${rotationOffset}deg)`;
+            }
+
+            // Update pulse color
+            const pulse = markerRef.current.getElement().querySelector('#vehicle-pulse');
+            if (pulse) {
+                pulse.className = `absolute inset-0 rounded-full opacity-20 animate-ping ${isOverspeed ? 'bg-red-500/80' : 'bg-emerald-500/50'}`;
+            }
+
+            // Update size if changed
+            const el = markerRef.current.getElement();
+            if (el) {
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
             }
         }
-
-    }, [userLocation, mapLoaded, followMode, user?.vehicleType, viewMode]);
+    }, [userLocation, mapLoaded, followMode, user?.vehicleType, viewMode, isOverspeed]);
 
     // 4. Render Route
     useEffect(() => {
         if (!map.current || !mapLoaded || routeSegments.length === 0) return;
 
-        const coordinates = routeSegments.flatMap(seg => seg.coordinates.map((c: number[]) => [c[1], c[0]]));
+        const allCoordinates = routeSegments.flatMap(seg => seg.coordinates.map((c: number[]) => [c[1], c[0]]));
+        const coveredCoords = allCoordinates.slice(0, currentRouteIndex + 1);
+        const remainingCoords = allCoordinates.slice(currentRouteIndex);
 
-        if (map.current.getSource('route')) {
-            (map.current.getSource('route') as maplibregl.GeoJSONSource).setData({
+        if (map.current.getSource('route-remaining')) {
+            (map.current.getSource('route-remaining') as maplibregl.GeoJSONSource).setData({
                 type: 'Feature',
                 properties: {},
-                geometry: { type: 'LineString', coordinates }
+                geometry: { type: 'LineString', coordinates: remainingCoords }
             });
         } else {
-            map.current.addSource('route', {
+            map.current.addSource('route-remaining', {
                 'type': 'geojson',
                 'data': {
                     'type': 'Feature',
                     'properties': {},
-                    'geometry': { type: 'LineString', coordinates }
+                    'geometry': { type: 'LineString', coordinates: remainingCoords }
                 }
             });
             map.current.addLayer({
-                'id': 'route',
+                'id': 'route-remaining',
                 'type': 'line',
-                'source': 'route',
+                'source': 'route-remaining',
                 'layout': { 'line-join': 'round', 'line-cap': 'round' },
                 'paint': {
-                    'line-color': '#3b82f6',
+                    'line-color': '#1a73e8',
+                    'line-width': 8,
+                    'line-opacity': 1.0
+                }
+            });
+        }
+
+        if (map.current.getSource('route-covered')) {
+            (map.current.getSource('route-covered') as maplibregl.GeoJSONSource).setData({
+                type: 'Feature',
+                properties: {},
+                geometry: { type: 'LineString', coordinates: coveredCoords }
+            });
+        } else {
+            map.current.addSource('route-covered', {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'properties': {},
+                    'geometry': { type: 'LineString', coordinates: coveredCoords }
+                }
+            });
+            map.current.addLayer({
+                'id': 'route-covered',
+                'type': 'line',
+                'source': 'route-covered',
+                'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                'paint': {
+                    'line-color': '#9ec5ff',
                     'line-width': 8,
                     'line-opacity': 0.8
                 }
             });
         }
-    }, [routeSegments, mapLoaded]);
+
+        if (map.current.getLayer('route')) {
+            map.current.removeLayer('route');
+            map.current.removeSource('route');
+        }
+    }, [routeSegments, mapLoaded, currentRouteIndex]);
+
+    // 5. Render Hazards
+    useEffect(() => {
+        if (!map.current || !mapLoaded || !routeHazards || routeHazards.length === 0) return;
+
+        console.log("Rendering hazards in 3D navigation:", routeHazards.length);
+
+        const hazardGeoJSON: any = {
+            type: 'FeatureCollection',
+            features: routeHazards
+                .filter(h => h.location && h.location.coordinates)
+                .map(h => ({
+                    type: 'Feature',
+                    properties: { type: h.type, name: h.name },
+                    geometry: h.location
+                }))
+        };
+
+        if (map.current.getSource('hazards')) {
+            (map.current.getSource('hazards') as maplibregl.GeoJSONSource).setData(hazardGeoJSON);
+        } else {
+            map.current.addSource('hazards', {
+                type: 'geojson',
+                data: hazardGeoJSON
+            });
+
+            map.current.addLayer({
+                id: 'hazard-glow',
+                type: 'circle',
+                source: 'hazards',
+                paint: {
+                    'circle-radius': 15,
+                    'circle-color': [
+                        'match', ['get', 'type'],
+                        'school_zone', '#60a5fa',
+                        'hospital_zone', '#ef4444',
+                        'speed_breaker', '#f97316',
+                        'sharp_turn', '#facc15',
+                        'bad_road', '#d97706',
+                        '#ffffff'
+                    ],
+                    'circle-opacity': 0.2,
+                    'circle-blur': 1
+                }
+            });
+
+            map.current.addLayer({
+                id: 'hazard-points',
+                type: 'circle',
+                source: 'hazards',
+                paint: {
+                    'circle-radius': 8,
+                    'circle-color': [
+                        'match', ['get', 'type'],
+                        'school_zone', '#3b82f6',
+                        'hospital_zone', '#dc2626',
+                        'speed_breaker', '#ea580c',
+                        'sharp_turn', '#eab308',
+                        'bad_road', '#92400e',
+                        '#ffffff'
+                    ],
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#ffffff'
+                }
+            });
+        }
+    }, [mapLoaded, routeHazards]);
 
     return <div ref={mapContainer} className="w-full h-full" />;
 };

@@ -41,4 +41,14 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Get user count (for stats)
+router.get('/count', async (req, res) => {
+    try {
+        const count = await User.countDocuments();
+        res.json({ count });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 export default router;

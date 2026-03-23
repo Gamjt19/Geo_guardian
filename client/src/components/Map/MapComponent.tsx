@@ -44,7 +44,7 @@ const MapComponent: React.FC<{
     activeStyle?: string;
     viewMode?: '2d' | '3d' | 'satellite';
     showTraffic?: boolean;
-}> = ({ children, activeStyle = 'standard', viewMode = '2d', showTraffic = false }) => {
+}> = ({ children, activeStyle = 'standard', showTraffic = false }) => {
     const { userLocation } = useMapContext();
 
     // Default position: London (or User's last known) - this could be dynamic
@@ -55,7 +55,7 @@ const MapComponent: React.FC<{
     // Instead we use the Effect3DView helper.
 
     return (
-        <MapContainer center={defaultPosition} zoom={13} scrollWheelZoom={true} className="h-full w-full z-0">
+        <MapContainer center={defaultPosition} zoom={13} scrollWheelZoom={true} className="h-full w-full z-0" style={{ height: '100%', width: '100%' }}>
             <Effect3DView />
             {activeStyle === 'standard' && (
                 <TileLayer

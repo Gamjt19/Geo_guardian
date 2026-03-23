@@ -19,16 +19,22 @@ import { useMapContext } from '../context/MapContext';
 import useHazardAlerts from '../hooks/useHazardAlerts';
 import useNavigationLogic from '../hooks/useNavigationLogic';
 import MapLibreNavigation from '../components/Map/MapLibreNavigation';
+import { HazardAlert } from '../components/Map/Navigation/HazardAlert';
+import { useMapStore } from '../store/mapStore';
+import SpeedDashboard from '../components/Map/SpeedDashboard';
+import { useSpeedLimit } from '../hooks/useSpeedLimit';
 
 const MapDashboard: React.FC = () => {
     const { user } = useAuth();
     const { theme } = useTheme();
-    const { userLocation, destination, setDestination, isNavigating, setIsNavigating, followMode, setFollowMode, triggerRecenter, startSimulation, stopSimulation, isSimulating } = useMapContext();
+    const { setActiveRoute } = useMapStore();
+    const { userLocation, setDestination, isNavigating, setIsNavigating, followMode, setFollowMode, triggerRecenter, startSimulation, stopSimulation, isSimulating, currentRouteIndex, hazards, routeHazards } = useMapContext();
     const [layers, setLayers] = useState({
         school_zone: true,
         hospital_zone: true,
         speed_breaker: true,
         sharp_turn: true,
+        bad_road: true,
         restrictions: true,
         traffic: false
     });
@@ -36,7 +42,6 @@ const MapDashboard: React.FC = () => {
     const [allRoutes, setAllRoutes] = useState<any[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
-    const [hazards, setHazards] = useState<any[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<any>(null);
 
     // Navigation Stats
@@ -45,14 +50,24 @@ const MapDashboard: React.FC = () => {
         duration: 0  // min
     });
 
-    // Hooks
-    useHazardAlerts({
-        hazards,
-        onAlert: (msg) => {
+    const speedInfo = useSpeedLimit(userLocation, user?.vehicleType || 'car');
+
+    // Overspeed alerts
+    useEffect(() => {
+        if (speedInfo.status === 'overspeed') {
+            const msg = `OVERSPEED WARNING: Limit is ${speedInfo.speedLimit} on ${speedInfo.roadType}!`;
             setAlertMessage(msg);
-            speak(msg);
+
+            if ('speechSynthesis' in window && !window.speechSynthesis.speaking) {
+                const utterance = new SpeechSynthesisUtterance(msg);
+                window.speechSynthesis.speak(utterance);
+            }
+        } else {
+            setAlertMessage(null); // Clear the alert when safely under the limit
         }
-    });
+    }, [speedInfo.status, speedInfo.speedLimit, speedInfo.roadType]);
+    // Hooks
+    useHazardAlerts(hazards);
 
     const currentRoute = allRoutes[selectedRouteIndex];
 
@@ -64,14 +79,6 @@ const MapDashboard: React.FC = () => {
         }
     });
 
-    useEffect(() => {
-        // Fetch hazards
-        axios.get('http://localhost:5000/api/hazards')
-            .then(res => setHazards(res.data))
-            .catch(err => console.error(err));
-    }, []);
-
-    // Re-calculate route when vehicle type changes
     useEffect(() => {
         if (selectedLocation && user?.vehicleType) {
             handleDestinationSelect(selectedLocation);
@@ -94,7 +101,7 @@ const MapDashboard: React.FC = () => {
 
     const handleDestinationSelect = async (location: any) => {
         console.log('Selected destination:', location);
-        const { lat, lon, display_name } = location;
+        const { lat, lon } = location;
         const latNum = parseFloat(lat);
         const lngNum = parseFloat(lon);
 
@@ -139,6 +146,16 @@ const MapDashboard: React.FC = () => {
             } else {
                 setAlertMessage(null);
             }
+            // Update Global Store for useHazardAlerts
+            setActiveRoute({
+                distance: parseFloat(primaryRoute.totalDistanceKm) * 1000,
+                duration: primaryRoute.totalDurationMin * 60,
+                geometry: {
+                    type: 'LineString',
+                    coordinates: primaryRoute.segments.flatMap((s: any) => s.coordinates).map((c: number[]) => [c[1], c[0]])
+                },
+                steps: []
+            });
 
         } catch (err) {
             console.error(err);
@@ -160,6 +177,17 @@ const MapDashboard: React.FC = () => {
         } else {
             setAlertMessage(null);
         }
+
+        // Update Global Store
+        setActiveRoute({
+            distance: parseFloat(selected.totalDistanceKm) * 1000,
+            duration: selected.totalDurationMin * 60,
+            geometry: {
+                type: 'LineString',
+                coordinates: selected.segments.flatMap((s: any) => s.coordinates).map((c: number[]) => [c[1], c[0]])
+            },
+            steps: []
+        });
     };
 
     return (
@@ -176,103 +204,114 @@ const MapDashboard: React.FC = () => {
                     viewMode={viewMode}
                     showTraffic={layers.traffic}
                 >
-                    <HazardLayers hazards={hazards} visibleTypes={layers} />
+                    <HazardLayers hazards={routeHazards} visibleTypes={layers} />
                     <RoutingLayer
                         routes={allRoutes}
                         selectedIndex={selectedRouteIndex}
                         onRouteSelect={handleRouteSelect}
+                        currentRouteIndex={currentRouteIndex}
                     />
                 </MapComponent>
             )}
 
-            {alertMessage && <AlertBanner message={alertMessage} type="warning" onClose={() => setAlertMessage(null)} />}
+    <HazardAlert />
+            <SpeedDashboard />
 
-            {/* Top Left - Search */}
-            {!isNavigating && (
-                <div className="absolute top-4 left-4 right-4 md:left-14 md:right-auto md:w-auto z-[400]">
-                    <SearchBox onDestinationSelect={handleDestinationSelect} />
-                </div>
-            )}
+    { alertMessage && <AlertBanner message={alertMessage} type="warning" onClose={() => setAlertMessage(null)} /> }
 
-            {/* Top Right - AQI */}
-            <div className="absolute top-20 right-4 md:top-4 md:right-4 z-[400] flex flex-col gap-2">
-                <AQIWidget />
+    {/* Top Left - Search */ }
+    {
+        !isNavigating && (
+            <div className="absolute top-4 left-4 right-4 md:left-14 md:right-auto md:w-auto z-[400]">
+                <SearchBox onDestinationSelect={handleDestinationSelect} />
             </div>
+        )
+    }
 
-            {/* Lane Guidance Overlay - Mocked to show when route is active */}
-            {/* <LaneGuidance visible={allRoutes.length > 0} /> */}
+    {/* Top Right - AQI */ }
+    <div className="absolute top-20 right-4 md:top-4 md:right-4 z-[400] flex flex-col gap-2">
+        <AQIWidget />
+    </div>
 
-            {/* Bottom Right - Layer Toggles */}
-            <div className="absolute bottom-20 right-4 md:bottom-8 md:right-4 z-[400] flex flex-col gap-4 items-end">
-                <LocateButton />
-                <VehicleSelector />
-                <LayerToggles toggles={layers} onToggleConfig={handleToggle} />
+    {/* Lane Guidance Overlay - Mocked to show when route is active */ }
+    {/* <LaneGuidance visible={allRoutes.length > 0} /> */ }
+
+    {/* Bottom Right - Layer Toggles */ }
+    <div className="absolute bottom-20 right-4 md:bottom-8 md:right-4 z-[400] flex flex-col gap-4 items-end">
+        <LocateButton />
+        <VehicleSelector />
+        <LayerToggles toggles={layers} onToggleConfig={handleToggle} />
+    </div>
+
+    {/* Bottom Left - Map Style Switcher */ }
+    <div className="absolute bottom-4 left-4 md:bottom-8 md:left-4 z-[400]">
+        <MapStyleSwitcher currentViewMode={viewMode} onViewModeChange={setViewMode} />
+    </div>
+
+    {/* Pre-Navigation Route Info & Start Button */ }
+    {
+        allRoutes.length > 0 && !isNavigating && selectedLocation && (
+            <LocationDetails
+                location={selectedLocation}
+                distance={navStats.distance}
+                duration={navStats.duration}
+                onStartNavigation={() => {
+                    setIsNavigating(true);
+                    setFollowMode(true);
+                }}
+                onSimulate={() => {
+                    const flatRoute = currentRoute?.segments?.flatMap((s: any) => s.coordinates) || [];
+                    startSimulation(flatRoute);
+                }}
+                onClear={() => {
+                    setDestination(null);
+                    setAllRoutes([]);
+                    triggerRecenter();
+                }}
+            />
+        )
+    }
+
+    {/* Re-Center Button */ }
+    {
+        isNavigating && !followMode && (
+            <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-[400]">
+                <button
+                    onClick={() => setFollowMode(true)}
+                    className="bg-white text-blue-600 font-bold py-2 px-6 rounded-full shadow-lg border border-blue-200 animate-bounce"
+                >
+                    Re-center
+                </button>
             </div>
+        )
+    }
 
-            {/* Bottom Left - Map Style Switcher */}
-            <div className="absolute bottom-4 left-4 md:bottom-8 md:left-4 z-[400]">
-                <MapStyleSwitcher currentViewMode={viewMode} onViewModeChange={setViewMode} />
-            </div>
-
-            {/* Pre-Navigation Route Info & Start Button */}
-            {allRoutes.length > 0 && !isNavigating && selectedLocation && (
-                <LocationDetails
-                    location={selectedLocation}
-                    distance={navStats.distance}
-                    duration={navStats.duration}
-                    onStartNavigation={() => {
-                        setIsNavigating(true);
-                        setFollowMode(true);
-                    }}
-                    onSimulate={() => {
-                        const flatRoute = currentRoute?.segments?.flatMap((s: any) => s.coordinates) || [];
-                        startSimulation(flatRoute);
-                    }}
-                    onClear={() => {
-                        setDestination(null);
-                        setAllRoutes([]);
-                        setSelectedLocation(null);
-                        triggerRecenter();
-                    }}
-                />
-            )}
-
-            {/* Re-Center Button */}
-            {isNavigating && !followMode && (
-                <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-[400]">
-                    <button
-                        onClick={() => setFollowMode(true)}
-                        className="bg-white text-blue-600 font-bold py-2 px-6 rounded-full shadow-lg border border-blue-200 animate-bounce"
-                    >
-                        Re-center
-                    </button>
-                </div>
-            )}
-
-            {/* Navigation Overlay */}
-            {isNavigating && (
-                <NavigationOverlay
-                    distanceKm={navStats.distance}
-                    durationMin={navStats.duration}
-                    onExit={() => {
-                        setIsNavigating(false);
-                        setFollowMode(false);
-                        // Trigger recenter on the Leaflet map so it's not stuck at London or previous view
-                        triggerRecenter();
-                    }}
-                    onStop={() => {
-                        if (isSimulating) {
-                            stopSimulation();
-                        }
-                        setIsNavigating(false);
-                        setFollowMode(false);
-                        setDestination(null);
-                        setAllRoutes([]);
-                        triggerRecenter();
-                    }}
-                />
-            )}
-        </div>
+    {/* Navigation Overlay */ }
+    {
+        isNavigating && (
+            <NavigationOverlay
+                distanceKm={navStats.distance}
+                durationMin={navStats.duration}
+                onExit={() => {
+                    setIsNavigating(false);
+                    setFollowMode(false);
+                    // Trigger recenter on the Leaflet map so it's not stuck at London or previous view
+                    triggerRecenter();
+                }}
+                onStop={() => {
+                    if (isSimulating) {
+                        stopSimulation();
+                    }
+                    setIsNavigating(false);
+                    setFollowMode(false);
+                    setDestination(null);
+                    setAllRoutes([]);
+                    triggerRecenter();
+                }}
+            />
+        )
+    }
+        </div >
     );
 };
 

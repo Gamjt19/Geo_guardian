@@ -1,0 +1,10 @@
+src/components/Map/Hazards/HazardConfirmPrompt.tsx(1,1): error TS6192: All imports in import declaration are unused.
+src/components/Map/Hazards/HazardReportSheet.tsx(57,24): error TS2353: Object literal may only specify known properties, and 'role' does not exist in type 'Partial<User>'.
+src/components/Map/Hazards/HazardReportSheet.tsx(64,24): error TS2353: Object literal may only specify known properties, and 'guidePoints' does not exist in type 'Partial<User>'.
+src/components/Navbar.tsx(44,19): error TS2339: Property 'role' does not exist on type 'User'.
+src/components/Navbar.tsx(115,52): error TS2339: Property 'role' does not exist on type 'User'.
+src/components/Navbar.tsx(209,122): error TS2339: Property 'email' does not exist on type 'User'.
+src/components/Navbar.tsx(266,94): error TS2339: Property 'email' does not exist on type 'User'.
+src/components/Navbar.tsx(271,101): error TS2339: Property 'role' does not exist on type 'User'.
+src/components/UI/SettingsModal.tsx(37,73): error TS2339: Property 'email' does not exist on type 'User'.
+src/components/UI/SettingsModal.tsx(44,91): error TS2339: Property 'role' does not exist on type 'User'.

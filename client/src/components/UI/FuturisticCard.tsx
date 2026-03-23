@@ -4,10 +4,11 @@ import { twMerge } from 'tailwind-merge';
 interface FuturisticCardProps {
     children: React.ReactNode;
     className?: string;
+    contentClassName?: string;
     title?: string;
 }
 
-const FuturisticCard = ({ children, className, title }: FuturisticCardProps) => {
+const FuturisticCard = ({ children, className, contentClassName, title }: FuturisticCardProps) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -38,7 +39,7 @@ const FuturisticCard = ({ children, className, title }: FuturisticCardProps) => 
                 </div>
             )}
 
-            <div className="p-6 relative z-10">
+            <div className={twMerge("p-6 relative z-10", contentClassName)}>
                 {children}
             </div>
         </motion.div>

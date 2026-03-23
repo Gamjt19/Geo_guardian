@@ -1,0 +1,7 @@
+src/components/Map/MapComponent.tsx(47,45): error TS6133: 'viewMode' is declared but its value is never read.
+src/components/Map/Navigation/LayerToggle.tsx(3,23): error TS1484: 'MapLayer' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/Map/Navigation/LocationButton.tsx(7,56): error TS6133: 'userLocation' is declared but its value is never read.
+src/components/Map/Navigation/SearchBar.tsx(2,29): error TS6133: 'ArrowLeft' is declared but its value is never read.
+src/hooks/useSimulatedLocation.ts(40,19): error TS6133: 'deltaTime' is declared but its value is never read.
+src/pages/MapDashboard.tsx(26,27): error TS6133: 'destination' is declared but its value is never read.
+src/pages/MapDashboard.tsx(97,27): error TS6133: 'display_name' is declared but its value is never read.

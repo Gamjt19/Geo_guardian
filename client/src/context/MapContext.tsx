@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import axios from 'axios';
 import useGeolocation from '../hooks/useGeolocation';
 import { useSimulatedLocation } from '../hooks/useSimulatedLocation';
 
@@ -31,6 +32,12 @@ interface MapContextProps {
     startSimulation: (route: [number, number][]) => void;
     stopSimulation: () => void;
     isSimulating: boolean;
+    currentRouteIndex: number;
+    activeHazardAlert: { name: string, description?: string } | null;
+    setActiveHazardAlert: (alert: { name: string, description?: string } | null) => void;
+    hazards: any[];
+    routeHazards: any[];
+    setRouteHazards: (hazards: any[]) => void;
 }
 
 const MapContext = createContext<MapContextProps | undefined>(undefined);
@@ -42,11 +49,20 @@ export const MapProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [isNavigating, setIsNavigating] = useState(false);
     const [followMode, setFollowMode] = useState(false);
     const [recenterTrigger, setRecenterTrigger] = useState(0);
+    const [activeHazardAlert, setActiveHazardAlert] = useState<{ name: string, description?: string } | null>(null);
+    const [hazards, setHazards] = useState<any[]>([]);
+    const [routeHazards, setRouteHazards] = useState<any[]>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:5000/api/hazards')
+            .then(res => setHazards(res.data))
+            .catch(err => console.error(err));
+    }, []);
 
     // Simulation State
     const [isSimulating, setIsSimulating] = useState(false);
     const [simulationRoute, setSimulationRoute] = useState<[number, number][] | null>(null);
-    const simLocation = useSimulatedLocation(simulationRoute, isSimulating, 30); // 30 km/h default
+    const simLocation = useSimulatedLocation(simulationRoute, isSimulating, 20); // 20 km/h default
 
     const userLocation = isSimulating && simLocation.coordinates
         ? {
@@ -65,6 +81,7 @@ export const MapProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             : null;
 
     const startSimulation = (route: [number, number][]) => {
+        simLocation.resetSimulation();
         setSimulationRoute(route);
         setIsSimulating(true);
         setIsNavigating(true); // Auto-start nav mode usually
@@ -94,7 +111,13 @@ export const MapProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 triggerRecenter: () => setRecenterTrigger(prev => prev + 1),
                 startSimulation,
                 stopSimulation,
-                isSimulating
+                isSimulating,
+                currentRouteIndex: simLocation.currentIndex || 0,
+                activeHazardAlert,
+                setActiveHazardAlert,
+                hazards,
+                routeHazards,
+                setRouteHazards
             }}
         >
             {children}

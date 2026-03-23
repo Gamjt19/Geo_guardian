@@ -17,9 +17,10 @@ interface RoutingLayerProps {
     routes: RouteData[];
     selectedIndex: number;
     onRouteSelect: (index: number) => void;
+    currentRouteIndex?: number;
 }
 
-const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRouteSelect }) => {
+const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRouteSelect, currentRouteIndex = 0 }) => {
     if (!routes || routes.length === 0) return null;
 
     // Use the primary (first) route for markers
@@ -51,9 +52,40 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
                 .sort((a, b) => (a.originalIndex === selectedIndex ? 1 : b.originalIndex === selectedIndex ? -1 : 0))
                 .map((route) => {
                     const isSelected = route.originalIndex === selectedIndex;
-                    const color = route.hasVehicleRestrictionViolations ? '#ef4444' : (isSelected ? '#3b82f6' : '#f59e0b');
                     const weight = isSelected ? 8 : 5;
                     const opacity = isSelected ? 1 : 0.6;
+
+                    // If it's the selected route and we have simulation progress, split it
+                    if (isSelected && currentRouteIndex > 0) {
+                        const allCoords = route.segments.flatMap(s => s.coordinates);
+                        const coveredCoords = allCoords.slice(0, currentRouteIndex + 1);
+                        const remainingCoords = allCoords.slice(currentRouteIndex);
+
+                        return (
+                            <React.Fragment key={route.originalIndex}>
+                                <Polyline
+                                    positions={coveredCoords}
+                                    pathOptions={{
+                                        color: '#9ec5ff',
+                                        weight: weight,
+                                        opacity: 0.8,
+                                        lineJoin: 'round'
+                                    }}
+                                />
+                                <Polyline
+                                    positions={remainingCoords}
+                                    pathOptions={{
+                                        color: '#1a73e8',
+                                        weight: weight,
+                                        opacity: 1,
+                                        lineJoin: 'round'
+                                    }}
+                                />
+                            </React.Fragment>
+                        );
+                    }
+
+                    const color = route.hasVehicleRestrictionViolations ? '#ef4444' : (isSelected ? '#3b82f6' : '#f59e0b');
 
                     return (
                         <React.Fragment key={route.originalIndex}>
