@@ -31,19 +31,21 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
     return (
         <>
             {/* Start Marker */}
-            <Marker position={startPoint} icon={new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                iconSize: [25, 41], iconAnchor: [12, 41]
+            <Marker position={startPoint} icon={new L.DivIcon({
+                html: `<svg viewBox="0 0 24 24" fill="#00d4ff" stroke="#fff" stroke-width="2" width="30" height="30" style="filter: drop-shadow(0px 4px 6px rgba(0, 212, 255, 0.4));"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#111827"/></svg>`,
+                className: 'custom-teardrop',
+                iconSize: [30, 30], iconAnchor: [15, 30]
             })}>
-                <Popup>Start</Popup>
+                <Popup className="dark-popup">Start</Popup>
             </Marker>
 
             {/* End Marker */}
-            <Marker position={endPoint} icon={new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-                iconSize: [25, 41], iconAnchor: [12, 41]
+            <Marker position={endPoint} icon={new L.DivIcon({
+                html: `<svg viewBox="0 0 24 24" fill="#ef4444" stroke="#fff" stroke-width="2" width="30" height="30" style="filter: drop-shadow(0px 4px 6px rgba(239, 68, 68, 0.4));"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#111827"/></svg>`,
+                className: 'custom-teardrop',
+                iconSize: [30, 30], iconAnchor: [15, 30]
             })}>
-                <Popup>Destination</Popup>
+                <Popup className="dark-popup">Destination</Popup>
             </Marker>
 
             {/* Render all routes. Inactive routes first, active route last to ensure it's on top */}
@@ -52,7 +54,7 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
                 .sort((a, b) => (a.originalIndex === selectedIndex ? 1 : b.originalIndex === selectedIndex ? -1 : 0))
                 .map((route) => {
                     const isSelected = route.originalIndex === selectedIndex;
-                    const weight = isSelected ? 8 : 5;
+                    const weight = isSelected ? 5 : 4;
                     const opacity = isSelected ? 1 : 0.6;
 
                     // If it's the selected route and we have simulation progress, split it
@@ -85,7 +87,6 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
                         );
                     }
 
-                    const color = route.hasVehicleRestrictionViolations ? '#ef4444' : (isSelected ? '#3b82f6' : '#f59e0b');
 
                     return (
                         <React.Fragment key={route.originalIndex}>
@@ -95,8 +96,8 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
                                     key={`halo-${route.originalIndex}-${segIdx}`}
                                     positions={seg.coordinates}
                                     pathOptions={{
-                                        color: '#ffffff',
-                                        weight: weight + 4,
+                                        color: '#00d4ff',
+                                        weight: weight + 8,
                                         opacity: 0.3,
                                         lineJoin: 'round'
                                     }}
@@ -114,7 +115,7 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
                                         }
                                     }}
                                     pathOptions={{
-                                        color: color,
+                                        color: route.hasVehicleRestrictionViolations ? '#ef4444' : (isSelected ? '#00d4ff' : '#f59e0b'),
                                         dashArray: seg.isRestricted ? '10, 10' : undefined,
                                         weight: weight,
                                         opacity: opacity,
@@ -122,12 +123,12 @@ const RoutingLayer: React.FC<RoutingLayerProps> = ({ routes, selectedIndex, onRo
                                         interactive: true
                                     }}
                                 >
-                                    <Popup>
-                                        <div className="font-sans min-w-[120px]">
-                                            <p className="font-bold text-slate-900">{route.totalDurationMin} min</p>
-                                            <p className="text-sm text-slate-600">{route.totalDistanceKm} km</p>
-                                            {!isSelected && <p className="text-xs text-orange-600 mt-1 font-medium">Click to use this route</p>}
-                                            {seg.isRestricted && <p className="text-xs text-red-500 mt-1 uppercase font-bold">Restriction Detected</p>}
+                                    <Popup className="dark-popup">
+                                        <div className="font-sans min-w-[120px] bg-[#111827] text-white p-2 rounded-lg -m-3">
+                                            <p className="font-bold text-[#00d4ff]">{route.totalDurationMin} min</p>
+                                            <p className="text-sm text-slate-300">{route.totalDistanceKm} km</p>
+                                            {!isSelected && <p className="text-xs text-orange-400 mt-1 font-medium">Click to use this route</p>}
+                                            {seg.isRestricted && <p className="text-xs text-[#ef4444] mt-1 uppercase font-bold">Restriction Detected</p>}
                                         </div>
                                     </Popup>
                                 </Polyline>

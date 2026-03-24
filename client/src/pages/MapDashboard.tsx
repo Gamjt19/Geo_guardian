@@ -215,21 +215,20 @@ const MapDashboard: React.FC = () => {
             )}
 
     <HazardAlert />
-            <SpeedDashboard />
 
     { alertMessage && <AlertBanner message={alertMessage} type="warning" onClose={() => setAlertMessage(null)} /> }
 
     {/* Top Left - Search */ }
     {
         !isNavigating && (
-            <div className="absolute top-4 left-4 right-4 md:left-14 md:right-auto md:w-auto z-[400]">
+            <div className="absolute top-[16px] left-3 z-[1500] w-[calc(100vw-24px)] md:w-[320px]">
                 <SearchBox onDestinationSelect={handleDestinationSelect} />
             </div>
         )
     }
 
     {/* Top Right - AQI */ }
-    <div className="absolute top-20 right-4 md:top-4 md:right-4 z-[400] flex flex-col gap-2">
+    <div className="absolute top-[16px] right-3 z-[1000] flex flex-col gap-2">
         <AQIWidget />
     </div>
 
@@ -237,14 +236,15 @@ const MapDashboard: React.FC = () => {
     {/* <LaneGuidance visible={allRoutes.length > 0} /> */ }
 
     {/* Bottom Right - Layer Toggles */ }
-    <div className="absolute bottom-20 right-4 md:bottom-8 md:right-4 z-[400] flex flex-col gap-4 items-end">
+    <div className={`absolute right-3 z-[1000] flex flex-col gap-3 items-end transition-all duration-300 ${isNavigating ? 'bottom-[180px]' : 'bottom-[60px]'}`}>
+        <SpeedDashboard />
         <LocateButton />
         <VehicleSelector />
         <LayerToggles toggles={layers} onToggleConfig={handleToggle} />
     </div>
 
     {/* Bottom Left - Map Style Switcher */ }
-    <div className="absolute bottom-4 left-4 md:bottom-8 md:left-4 z-[400]">
+    <div className={`absolute left-3 z-[1000] transition-all duration-300 ${isNavigating ? 'bottom-[180px]' : 'bottom-[60px]'}`}>
         <MapStyleSwitcher currentViewMode={viewMode} onViewModeChange={setViewMode} />
     </div>
 

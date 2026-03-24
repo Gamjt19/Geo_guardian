@@ -45,45 +45,44 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onDestinationSelect }) => {
     };
 
     return (
-        <div className="bg-slate-950/80 backdrop-blur-xl p-4 rounded-2xl shadow-[0_0_20px_rgba(173,216,230,0.15)] border border-blue-300/30 w-full md:w-96 pointer-events-auto ring-1 ring-blue-300/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(173,216,230,0.25)] hover:border-blue-300/50
-">
-            <form onSubmit={onSubmit} className="flex gap-3 relative">
-                <div className={`relative flex-1 transition-all duration-300 rounded-xl ${isFocused ? 'ring-2 ring-blue-300/50 shadow-[0_0_15px_rgba(173,216,230,0.3)]' : ''}`}>
+        <div className="bg-[#111827]/90 backdrop-blur-[12px] p-2 rounded-[12px] border border-white/[0.08] shadow-lg w-full pointer-events-auto transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,212,255,0.15)] hover:border-white/[0.15]">
+            <form onSubmit={onSubmit} className="flex gap-2 relative">
+                <div className={`relative flex-1 transition-all duration-300 rounded-lg ${isFocused ? 'ring-1 ring-[#00d4ff] shadow-[0_0_10px_rgba(0,212,255,0.2)]' : ''}`}>
                     <input
                         type="text"
-                        placeholder="Enter Destination"
-                        className="w-full bg-slate-900/60 border border-slate-700/50 rounded-xl px-4 py-3 text-cyan-100 text-sm focus:outline-none focus:border-cyan-500/50 transition-colors placeholder:text-slate-500 font-medium tracking-wide"
+                        placeholder="Enter Destination..."
+                        className="w-full bg-[#1f2937] border border-transparent rounded-[8px] px-4 py-2.5 text-white text-sm focus:outline-none transition-colors placeholder:text-white/60 font-medium tracking-wide"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+                        <div className="w-2 h-2 rounded-full bg-[#00d4ff] animate-pulse shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
                     </div>
                 </div>
                 <button
                     type="submit"
-                    className="bg-gradient-to-r from-cyan-600 to-cyan-500 text-white text-sm px-6 py-2 rounded-xl hover:from-cyan-500 hover:to-cyan-400 transition-all font-orbitron font-bold tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] uppercase transform hover:scale-105 active:scale-95 border border-cyan-400/50"
+                    className="bg-gradient-to-r from-[#00b4d8] to-[#00d4ff] text-white text-sm px-6 py-2 rounded-[8px] font-bold tracking-wider shadow-[0_0_10px_rgba(0,212,255,0.3)] hover:shadow-[0_0_15px_rgba(0,212,255,0.5)] uppercase transform hover:scale-105 active:scale-95 transition-all"
                 >
                     Search
                 </button>
             </form>
 
             {results.length > 0 && (
-                <ul className="mt-3 text-sm max-h-60 overflow-y-auto bg-slate-900/95 backdrop-blur-xl border border-cyan-500/30 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] scrollbar-thin scrollbar-thumb-cyan-600/50 scrollbar-track-slate-800/50 divide-y divide-cyan-500/10">
+                <ul className="mt-2 text-sm max-h-60 overflow-y-auto bg-[#111827]/95 backdrop-blur-[12px] border border-white/[0.08] rounded-[12px] shadow-[0_0_20px_rgba(0,0,0,0.5)] scrollbar-thin scrollbar-thumb-[#00d4ff]/50 scrollbar-track-transparent divide-y divide-white/[0.05]">
                     {results.map((r, idx) => (
                         <li
                             key={idx}
-                            className="p-3 hover:bg-cyan-900/20 cursor-pointer text-slate-300 hover:text-cyan-300 transition-all duration-200 border-l-2 border-transparent hover:border-cyan-500 flex items-center gap-3 group"
+                            className="p-3 hover:bg-[#00d4ff]/10 cursor-pointer text-slate-300 hover:text-white transition-all duration-200 border-l-2 border-transparent hover:border-[#00d4ff] flex items-center gap-3 group"
                             onClick={() => {
                                 onDestinationSelect(r);
                                 setResults([]);
                                 setQuery(r.display_name.split(',')[0]);
                             }}
                         >
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-cyan-500 transition-colors shadow-[0_0_5px_rgba(6,182,212,0)] group-hover:shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                            <span className="font-medium">{r.display_name}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/30 group-hover:bg-[#00d4ff] transition-colors shadow-none group-hover:shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
+                            <span className="font-medium truncate">{r.display_name}</span>
                         </li>
                     ))}
                 </ul>

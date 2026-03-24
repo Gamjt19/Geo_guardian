@@ -36,10 +36,10 @@ const LayerToggles: React.FC<LayerTogglesProps> = ({ toggles, onToggleConfig }) 
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="layer-toggles-container bg-slate-900/90 backdrop-blur-md p-3 rounded-full shadow-lg border border-slate-800 pointer-events-auto ring-1 ring-white/5 hover:bg-slate-800 transition-colors"
+                className="layer-toggles-container w-12 h-12 flex items-center justify-center bg-[#111827]/90 backdrop-blur-[12px] rounded-full shadow-lg border border-white/[0.08] pointer-events-auto hover:bg-[#00d4ff]/10 hover:shadow-[0_0_15px_rgba(0,212,255,0.2)] hover:border-[#00d4ff]/50 transition-all group"
                 title="Toggle Layers"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#00d4ff] group-hover:drop-shadow-[0_0_8px_rgba(0,212,255,0.8)] transition-all">
                     <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                     <polyline points="2 17 12 22 22 17"></polyline>
                     <polyline points="2 12 12 17 22 12"></polyline>
@@ -49,8 +49,8 @@ const LayerToggles: React.FC<LayerTogglesProps> = ({ toggles, onToggleConfig }) 
     }
 
     return (
-        <div className="layer-toggles-container bg-slate-900/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-slate-800 pointer-events-auto ring-1 ring-white/5 min-w-[200px] animate-in fade-in zoom-in duration-200 origin-bottom-right">
-            <div className="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
+        <div className="layer-toggles-container bg-[#111827]/90 backdrop-blur-[12px] p-4 rounded-[12px] shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/[0.08] pointer-events-auto min-w-[200px] animate-in fade-in zoom-in duration-200 origin-bottom-right">
+            <div className="flex justify-between items-center mb-3 border-b border-white/[0.08] pb-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Layers</span>
                 <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-slate-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -67,7 +67,7 @@ const LayerToggles: React.FC<LayerTogglesProps> = ({ toggles, onToggleConfig }) 
                                 type="checkbox"
                                 checked={toggles[key]}
                                 onChange={() => onToggleConfig(key)}
-                                className="peer h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500/20 focus:ring-offset-0 transition-all"
+                                className="peer h-4 w-4 rounded border-slate-600 bg-slate-800 text-[#00d4ff] focus:ring-[#00d4ff]/20 focus:ring-offset-0 transition-all"
                             />
                         </div>
                         <span className="text-slate-300 group-hover:text-white transition-colors">{labels[key] || key}</span>

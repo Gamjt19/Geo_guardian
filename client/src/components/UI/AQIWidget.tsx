@@ -57,17 +57,17 @@ const AQIWidget: React.FC = () => {
     if (!data) return null;
 
     const getColor = (aqi: number) => {
-        if (aqi <= 50) return 'bg-green-500';
-        if (aqi <= 100) return 'bg-yellow-500';
-        if (aqi <= 150) return 'bg-orange-500';
-        return 'bg-red-600';
+        if (aqi <= 50) return 'bg-[#22c55e]';
+        if (aqi <= 100) return 'bg-[#eab308]';
+        if (aqi <= 150) return 'bg-[#f97316]';
+        return 'bg-[#ef4444]';
     };
 
     const getBgColor = (aqi: number) => {
-        if (aqi <= 50) return 'bg-green-500/20 text-green-400 border-green-500/30';
-        if (aqi <= 100) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-        if (aqi <= 150) return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
+        if (aqi <= 50) return 'bg-[#22c55e]/20 text-[#22c55e] border-[#22c55e]/30';
+        if (aqi <= 100) return 'bg-[#eab308]/20 text-[#eab308] border-[#eab308]/30';
+        if (aqi <= 150) return 'bg-[#f97316]/20 text-[#f97316] border-[#f97316]/30';
+        return 'bg-[#ef4444]/20 text-[#ef4444] border-[#ef4444]/30';
     };
 
     // Mobile Collapsed View
@@ -75,7 +75,7 @@ const AQIWidget: React.FC = () => {
         return (
             <button
                 onClick={() => setIsExpanded(true)}
-                className={`aqi-widget-container p-3 rounded-full shadow-lg border backdrop-blur-md transition-all ${getBgColor(data.aqi)} border-slate-800`}
+                className={`aqi-widget-container p-3 rounded-full shadow-lg border backdrop-blur-[12px] transition-all ${getBgColor(data.aqi)}`}
                 title={`AQI: ${data.aqi}`}
             >
                 <div className="flex flex-col items-center justify-center w-5 h-5">
@@ -86,10 +86,9 @@ const AQIWidget: React.FC = () => {
         );
     }
 
-    // Expanded View (Desktop or Mobile Open)
     return (
-        <div className={`aqi-widget-container bg-slate-900/90 backdrop-blur-md p-3 rounded-xl shadow-lg border border-slate-800 w-64 pointer-events-auto ring-1 ring-white/5 ${isMobile ? 'animate-in fade-in zoom-in duration-200 origin-top-right absolute right-0 top-0' : ''}`}>
-            <div className="flex justify-between items-center mb-2 border-b border-slate-800 pb-2">
+        <div className={`aqi-widget-container bg-[#111827]/90 backdrop-blur-[12px] p-4 rounded-[12px] shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/[0.08] w-64 pointer-events-auto ${isMobile ? 'animate-in fade-in zoom-in duration-200 origin-top-right absolute right-0 top-0' : ''}`}>
+            <div className="flex justify-between items-center mb-3 border-b border-white/[0.08] pb-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Air Quality</span>
                 {isMobile && (
                     <button onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }} className="text-slate-500 hover:text-slate-300">

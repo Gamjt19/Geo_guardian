@@ -39,16 +39,16 @@ const SpeedDashboard: React.FC = () => {
 
     return (
         <div 
-            className="absolute top-4 right-4 z-[500] pointer-events-auto md:top-24 flex flex-col items-end"
+            className="relative z-[1000] pointer-events-auto flex flex-col items-end"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* Expanded Full Dashboard */}
             <div className={`
-                backdrop-blur-xl bg-slate-900/80 border overflow-hidden
+                backdrop-blur-xl bg-slate-900/80 border overflow-hidden absolute bottom-0 right-0
                 ${isOverspeed ? 'border-red-500/50 shadow-red-500/20' : 'border-slate-700/50 shadow-black/50'} 
-                shadow-2xl rounded-2xl text-white transform origin-top-right transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                ${isHovered ? 'w-72 opacity-100 scale-100' : 'w-16 h-16 opacity-0 scale-50 pointer-events-none absolute'}
+                shadow-2xl rounded-2xl text-white transform origin-bottom-right transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                ${isHovered ? 'w-72 opacity-100 scale-100' : 'w-16 h-16 opacity-0 scale-50 pointer-events-none'}
             `}>
                 
                 {/* Background warning red flash if overspeed */}
@@ -120,16 +120,16 @@ const SpeedDashboard: React.FC = () => {
 
             {/* Collapsed Small Circle Badge */}
             <div className={`
-                flex items-center justify-center w-16 h-16 rounded-full border-[3px]
-                backdrop-blur-xl transition-all duration-300 shadow-xl cursor-pointer
-                ${isHovered ? 'opacity-0 scale-50 absolute pointer-events-none' : 'opacity-100 scale-100 bg-slate-900/90'}
-                ${isOverspeed ? 'border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.7)] animate-pulse' : 'border-slate-600/80'}
+                flex items-center justify-center w-12 h-12 rounded-full border-[3px] bg-[#111827]/90
+                backdrop-blur-[12px] transition-all duration-300 shadow-lg cursor-pointer
+                ${isHovered ? 'opacity-0 scale-50 absolute pointer-events-none' : 'opacity-100 scale-100'}
+                ${isOverspeed ? 'border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.7)] animate-pulse' : 'border-[#00d4ff]/50 hover:border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 group'}
             `}>
-                <div className="flex flex-col items-center justify-center mt-1">
-                     <span className={`text-2xl leading-none font-bold font-orbitron ${isOverspeed ? 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'text-emerald-400'}`}>
+                <div className="flex flex-col items-center justify-center -space-y-1">
+                     <span className={`text-lg font-bold font-orbitron ${isOverspeed ? 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'text-[#00d4ff] group-hover:drop-shadow-[0_0_8px_rgba(0,212,255,0.8)] transition-all'}`}>
                         {Math.round(currentSpeed)}
                      </span>
-                     <span className="text-[10px] text-slate-400 font-mono mt-0.5 font-semibold">km/h</span>
+                     <span className="text-[8px] text-slate-400 font-mono font-semibold">km/h</span>
                 </div>
             </div>
             

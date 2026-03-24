@@ -12,10 +12,9 @@
 html,
 body,
 #root {
-  height: 100%;
   margin: 0;
   padding: 0;
-  @apply bg-[#050510] text-slate-100 overflow-x-hidden;
+  @apply bg-[#050510] text-slate-100;
 }
 
 body {
@@ -102,4 +101,35 @@ body {
 /* Hide control containers if needed (e.g. zoom controls might look weird tilted) */
 .map-navigation-3d .leaflet-control-container .leaflet-top {
   top: 50px;
+}
+
+/* Custom Zoom Control Styling */
+.leaflet-control-zoom {
+  position: absolute !important;
+  top: 130px !important;
+  left: 16px !important;
+  margin: 0 !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  backdrop-filter: blur(12px) !important;
+  background: rgba(17, 24, 39, 0.8) !important;
+}
+
+.leaflet-control-zoom a {
+  background: transparent !important;
+  color: #00d4ff !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  width: 48px !important;
+  height: 48px !important;
+  line-height: 48px !important;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
 }

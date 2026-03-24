@@ -7,6 +7,7 @@ import { MapProvider } from './context/MapContext';
 import { ThemeProvider } from './context/ThemeContext';
 import MapDashboard from './pages/MapDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import { LandingPage } from './components/Landing/LandingPage';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -32,6 +33,7 @@ function App() {
         <MapProvider>
           <Router>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/*"
@@ -39,7 +41,7 @@ function App() {
                   <PrivateRoute>
                     <Layout>
                       <Routes>
-                        <Route path="/" element={<MapDashboard />} />
+                        <Route path="/dashboard" element={<MapDashboard />} />
                         <Route path="/admin" element={<AdminDashboard />} />
                       </Routes>
                     </Layout>

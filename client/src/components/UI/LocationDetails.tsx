@@ -58,8 +58,8 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
     const address = location.display_name.split(',').slice(1).join(',').trim();
 
     return (
-        <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 z-[400] w-[calc(100%-2rem)] md:w-96 animate-slide-up">
-            <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+        <div className="absolute bottom-4 left-4 md:bottom-28 md:left-8 z-[400] w-[calc(100%-2rem)] md:w-96 animate-slide-up">
+            <div className="bg-[#111827]/90 backdrop-blur-[12px] border border-white/[0.08] rounded-[12px] overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.5)] flex flex-col">
 
                 {/* Image Section */}
                 <div className="h-48 w-full bg-slate-800 relative overflow-hidden group">
@@ -106,16 +106,16 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
 
                     {/* Stats */}
                     {distance !== undefined && duration !== undefined && (
-                        <div className="flex items-center justify-around py-3 border-t border-slate-800/50 bg-slate-900/50 rounded-lg">
+                        <div className="flex items-center justify-around py-3 border-t border-white/[0.08] bg-[#1f2937]/50 rounded-[8px]">
                             <div className="flex flex-col items-center">
                                 <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Distance</span>
-                                <span className="text-emerald-400 font-bold font-mono text-lg">{distance.toFixed(1)} <span className="text-emerald-400/60 text-sm">km</span></span>
+                                <span className="text-[#00d4ff] font-bold font-mono text-lg">{distance.toFixed(1)} <span className="text-[#00d4ff]/60 text-sm">km</span></span>
                             </div>
-                            <div className="w-[1px] h-8 bg-slate-700/50"></div>
+                            <div className="w-[1px] h-8 bg-white/[0.08]"></div>
 
                             <div className="flex flex-col items-center">
                                 <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Duration</span>
-                                <span className="text-blue-400 font-bold font-mono text-lg">{formatDuration(duration)}</span>
+                                <span className="text-[#00d4ff] font-bold font-mono text-lg">{formatDuration(duration)}</span>
                             </div>
                         </div>
                     )}
@@ -124,7 +124,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                     <div className="grid grid-cols-2 gap-3 pt-2">
                         <button
                             onClick={onSimulate}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold py-3 px-4 rounded-xl border border-slate-600 transition-all flex items-center justify-center gap-2"
+                            className="bg-[#1f2937] hover:bg-white/[0.05] text-slate-200 text-sm font-bold py-3 px-4 rounded-[8px] border border-white/[0.08] transition-all flex items-center justify-center gap-2"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -134,7 +134,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
                         </button>
                         <button
                             onClick={onStartNavigation}
-                            className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 border border-blue-400/30"
+                            className="bg-gradient-to-r from-[#00b4d8] to-[#00d4ff] text-white text-sm font-bold py-3 px-4 rounded-[8px] shadow-[0_0_10px_rgba(0,212,255,0.3)] hover:shadow-[0_0_15px_rgba(0,212,255,0.5)] transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 border border-transparent"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />

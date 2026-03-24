@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
     const isActive = (path: string) => location.pathname === path;
 
     const navLinks = [
-        { path: '/', label: 'Live Map', icon: MapIcon },
+        { path: '/dashboard', label: 'Live Map', icon: MapIcon },
         ...(user?.role === 'admin' ? [{ path: '/admin', label: 'Admin Console', icon: BarChart3 }] : []),
     ];
 
@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
             <motion.nav
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
-                className="fixed top-0 left-0 right-0 z-50 h-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-700/50 shadow-lg"
+                className="fixed top-0 left-0 right-0 z-[3000] h-[56px] bg-[#0a0e1a]/95 backdrop-blur-[20px] border-b border-white/[0.08] shadow-lg"
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
                     <div className="flex items-center justify-between h-full">
@@ -97,9 +97,9 @@ const Navbar: React.FC = () => {
 
                         {/* User Profile & Actions */}
                         <div className="hidden md:flex items-center gap-6">
-                            <div className="flex items-center gap-3 bg-slate-900/50 py-1.5 px-4 rounded-full border border-slate-700/50">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                                <span className="text-xs font-mono text-slate-400">SYSTEM ONLINE</span>
+                            <div className="flex items-center gap-3 bg-[#111827]/80 py-1.5 px-4 rounded-full border border-white/[0.08]">
+                                <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                                <span className="text-[10px] font-mono text-slate-300">SYSTEM ONLINE</span>
                             </div>
 
                             <div className="relative" ref={profileRef}>
